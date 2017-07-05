@@ -40,7 +40,7 @@ Then, to launch the server locally, use the following commands:
 ```bash
 cd chatbot_website/
 redis-server &  # Launch Redis in background
-nohup /workHome/python3/bin/python3 /cloudocBot/chatbot_website/manage.py runserver 0.0.0.0:8000 &
+nohup /workHome/python3/bin/python3 /shareDisk/cloudocBot/chatbot_website/manage.py runserver 0.0.0.0:8000 &
 ```
 
 After launch, the interface should be available on [http://localhost:8000/](http://localhost:8000/). If you want to deploy the program on a server, use `python manage.py runserver 0.0.0.0` instead. More info [here](https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/).
