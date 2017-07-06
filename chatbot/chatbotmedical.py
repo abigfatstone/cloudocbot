@@ -21,7 +21,7 @@ class Chatbot:
         
         self.CONFIG_FILENAME = 'params.ini'
         self.SENTENCES_PREFIX = ['AI: ', 'me: ']
-        self.userID=''
+
 
     @staticmethod
     def parseArgs(args):
@@ -73,34 +73,62 @@ class Chatbot:
         """
         print('')
 
-        callbackKey ='firstcall'
-        self.getUserID()
+        p_userid = self.getUserID()
+        p_callbackKey  ='firstcall'
 
-        sysSaid = self.daemonPredict(self.userID,'firstcall',self.userID)
-        callbackKey =sysSaid[1]
-        print('{}{}'.format(self.SENTENCES_PREFIX[0],sysSaid[0]))
+        sysSaid = self.daemonPredict(p_userid,p_callbackKey ,p_userid)
+        p_callbackKey =sysSaid[1]
+        print('{}{}'.format(self.SENTENCES_PREFIX[0],sysSaid[2]))
 
         while True:
             userSaid = input(self.SENTENCES_PREFIX[1])
             if userSaid == 'exit':    
                 break
 
-            sysSaid = self.daemonPredict(self.userID,callbackKey,userSaid)
-            callbackKey = sysSaid[1]
-            print('{}{}'.format(self.SENTENCES_PREFIX[0],sysSaid[0]))
+            sysSaid = self.daemonPredict(p_userid,p_callbackKey,userSaid)
+            p_callbackKey = sysSaid[1]
+            print('{}{}'.format(self.SENTENCES_PREFIX[0],sysSaid[2]))
 
 
-    def daemonPredict(self, userID,callbackKey,sentence):
+    def daemonPredict(self, in_userID,in_callbackKey,in_sentence):
+
         conn= pymysql.connect(host=self.mysqlHost , port = self.mysqlPort , user = self.mysqlUser , passwd=self.mysqlPassword , db =self.mysqlDB , charset=self.mysqlCharset)
         cur = conn.cursor()
-        v_sql="call prc_main('"+userID+"','"+callbackKey+"','"+sentence+"')"
+
+        p_callbackKey=in_callbackKey
+        
+        ''' get last call back key from server
+        ''' 
+        
+        v_sql='select callback_key from t_user_callback where user_id=\''+in_userID+'\''
+        cur.execute(v_sql)
+        if (cur.rowcount>0):
+            for r in cur.fetchall():
+                p_callbackKey = r[0]
+            else:
+                p_callbackKey == 'firstcall'
+        
+
+        v_sql="call prc_main('"+in_userID+"','"+p_callbackKey+"','"+in_sentence+"')"
         print(v_sql)
         cur.execute(v_sql)
-        sysSaid=['','']
-        for r in cur.fetchall():
-            sysSaid[0] = sysSaid[0]+'\n'+r[2]
-            sysSaid[1]  = r[1]
+        sysSaid=['','','']
+        if (cur.rowcount>0):
+            for r in cur.fetchall():
+                sysSaid[0]  = r[0]
+                sysSaid[1]  = r[1]
+                sysSaid[2] = sysSaid[2]+'\n'+r[2]
+
+
+        #insert callback key back to server    
+        v_sql='insert into t_user_callback(user_id,callback_key) select \''+in_userID+'\',\''+p_callbackKey+'\' ON DUPLICATE KEY UPDATE callback_key=\''+p_callbackKey+'\''
+        print(v_sql)
+        cur.execute(v_sql)  
+        conn.commit()
+        
+        # close connection
         conn.close()    
+
         return sysSaid
 
     
@@ -114,7 +142,7 @@ class Chatbot:
     def getUserID(self):
         sysSaid=['welcome! What is you name?']
         print('{}{}'.format(self.SENTENCES_PREFIX[0],sysSaid[0]))
-        self.userID = input(self.SENTENCES_PREFIX[1])
+        return input(self.SENTENCES_PREFIX[1])
 
 
     def loadModelParams(self):

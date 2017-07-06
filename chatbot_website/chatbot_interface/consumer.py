@@ -46,19 +46,24 @@ def ws_receive(message):
     #message.channel_session['cs_callbackKey']='firstcall'
     data = json.loads(message['text'])
     # Compute the prediction
-    userSaid = ''.join(data['message']).split('@userid@')
-    userID=userSaid[1]
-    callbackKey='firstcall'
+    userInput = ''.join(data['message']).split('@userid@')
+    userID=userInput[1]
+
+    p_callbackKey='firstcall'
+
     if userID == 'null':
         userID=clientName
+
     try:
-        sysSaid = ChatbotManager.callBot(userID,'firstcall',userSaid[0])
-        answer=sysSaid[0]
+        sysSaid = ChatbotManager.callBot(userID,p_callbackKey,userInput[0])
+
         callbackKey=sysSaid[1]
+        answer=sysSaid[2]
+
         #answer = answer + "<a href='baidu.com'>baidu</a>"
         answer += "<p><input type='checkbox' name='option' value='上海' />上海</p><p><input type='checkbox' name='option' value='北京' />北京</p><p><a href='javascript:void(0)' style='color:red' id='sendOption'> 提交</a></p>"
     except:  # Catching all possible mistakes
-        logger.error('{}: Error with this question {}'.format(clientName, userSaid))
+        logger.error('{}: Error with this question {}'.format(clientName, userInput))
         logger.error("Unexpected error:", sys.exc_info()[0])
         answer = 'Error: Internal problem'
 
@@ -66,7 +71,7 @@ def ws_receive(message):
     if not answer:
         answer = 'Error: Try a shorter sentence'
 
-    logger.info('{}: {} -> {}'.format(clientName, userSaid, answer))
+    logger.info('{}: {} -> {}'.format(clientName, userInput, answer))
 
     # Send the prediction back
     Group(clientName).send({'text': json.dumps({'message': answer})})

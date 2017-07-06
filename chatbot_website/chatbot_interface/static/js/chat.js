@@ -50,7 +50,7 @@ $(function() {
             if (message_val) {
                 // Send the message
                 var message = {
-                    message: message_val + '@userid@' + getQueryString('userid') 
+                    message: message_val + '@userid@' + getQueryString('UserID') 
                 };
                 chatsock.send(JSON.stringify(message));
                 message_elem.val('').focus();

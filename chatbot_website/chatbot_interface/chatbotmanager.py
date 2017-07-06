@@ -39,8 +39,6 @@ class ChatbotManager(AppConfig):
             logger.info('Initializing bot...')
             #ChatbotManager.bot = chatbot.Chatbot()
             ChatbotManager.bot = chatbotmedical.Chatbot()
-            #ChatbotManager.bot.main(['--modelTag', 'server', '--test', 'daemon', '--rootDir', chatbotPath])
-            #ChatbotManager.bot.main(['--test', 'daemon', '--rootDir', chatbotPath])
             ChatbotManager.bot.main(['--runmode', 'daemon', '--rootDir', chatbotPath])
             
         else:
@@ -49,7 +47,7 @@ class ChatbotManager(AppConfig):
     @staticmethod
 
 
-    def callBot(userID,callbackKey,sentence):
+    def callBot(in_userID,in_callbackKey,in_sentence):
         """ Use the previously instantiated bot to predict a response to the given sentence
         Args:
             sentence (str): the question to answer
@@ -58,6 +56,6 @@ class ChatbotManager(AppConfig):
         """
 
         if ChatbotManager.bot:
-            return ChatbotManager.bot.daemonPredict(userID,callbackKey,sentence)
+            return ChatbotManager.bot.daemonPredict(in_userID,in_callbackKey,in_sentence)
         else:
             logger.error('Error: Bot not initialized!')
