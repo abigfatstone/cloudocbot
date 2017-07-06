@@ -2,3 +2,4 @@
 params.ini
 chatbot_website/logs/debug_chatbot.log
 chatbot_website/logs/debug_django.log
+nohup.out

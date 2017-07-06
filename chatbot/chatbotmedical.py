@@ -22,7 +22,6 @@ class Chatbot:
         self.CONFIG_FILENAME = 'params.ini'
         self.SENTENCES_PREFIX = ['AI: ', 'me: ']
         self.userID=''
-        self.callbackKey = 'firstcall'
 
     @staticmethod
     def parseArgs(args):
@@ -64,49 +63,45 @@ class Chatbot:
             self.args.rootDir = os.getcwd()  # Use the current working directory
 
         if self.args.runmode == Chatbot.RunMode.INTERACTIVE:
-            self.mainMedicalChat()
+            self.chatInteractive()
 
 
-    def mainMedicalChat(self):
+    def chatInteractive(self):
         """ Try predicting the sentences that the user will enter in the console
         Args:
             sess: The current running session
         """
         print('')
 
-        if self.callbackKey == 'firstcall':
-            self.getUserID()
+        callbackKey ='firstcall'
+        self.getUserID()
+
+        sysSaid = self.daemonPredict(self.userID,'firstcall',self.userID)
+        callbackKey =sysSaid[1]
+        print('{}{}'.format(self.SENTENCES_PREFIX[0],sysSaid[0]))
 
         while True:
-            answer = input(self.SENTENCES_PREFIX[1])
-            if answer == 'exit':    
+            userSaid = input(self.SENTENCES_PREFIX[1])
+            if userSaid == 'exit':    
                 break
 
-            question = self.getNextQuestion(answer)
-            print('{}{}'.format(self.SENTENCES_PREFIX[0],question))
+            sysSaid = self.daemonPredict(self.userID,callbackKey,userSaid)
+            callbackKey = sysSaid[1]
+            print('{}{}'.format(self.SENTENCES_PREFIX[0],sysSaid[0]))
 
 
-    def getNextQuestion(self,answer):
+    def daemonPredict(self, userID,callbackKey,sentence):
         conn= pymysql.connect(host=self.mysqlHost , port = self.mysqlPort , user = self.mysqlUser , passwd=self.mysqlPassword , db =self.mysqlDB , charset=self.mysqlCharset)
         cur = conn.cursor()
-        v_sql="call prc_main('"+self.userID+"','"+self.callbackKey+"','"+answer+"')"
+        v_sql="call prc_main('"+userID+"','"+callbackKey+"','"+sentence+"')"
         print(v_sql)
         cur.execute(v_sql)
-        question=''
+        sysSaid=['','']
         for r in cur.fetchall():
-            question = question+'\n'+r[2]
-            self.callbackKey = r[1]
+            sysSaid[0] = sysSaid[0]+'\n'+r[2]
+            sysSaid[1]  = r[1]
         conn.close()    
-        return question
-
-    def daemonPredict(self, sentence):
-        """ Return the answer to a given sentence (same as singlePredict() but with additional cleaning)
-        Args:
-            sentence (str): the raw input sentence
-        Return:
-            str: the human readable sentence
-        """
-        return self.getNextQuestion( sentence )
+        return sysSaid
 
     
     def daemonClose(self):
@@ -117,12 +112,9 @@ class Chatbot:
         print('Daemon closed.')
 
     def getUserID(self):
-        question='welcome! What is you name?'
-        print('{}{}'.format(self.SENTENCES_PREFIX[0],question))
+        sysSaid=['welcome! What is you name?']
+        print('{}{}'.format(self.SENTENCES_PREFIX[0],sysSaid[0]))
         self.userID = input(self.SENTENCES_PREFIX[1])
-        question = self.getNextQuestion(self.userID)
-        print('{}{}'.format(self.SENTENCES_PREFIX[0],question))
-
 
 
     def loadModelParams(self):

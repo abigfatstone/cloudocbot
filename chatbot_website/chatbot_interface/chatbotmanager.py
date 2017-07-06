@@ -48,10 +48,8 @@ class ChatbotManager(AppConfig):
 
     @staticmethod
 
-    def resetID():
-        ChatbotManager.bot.userID = ''
-        ChatbotManager.bot.callbackKey = 'firstcall'
-    def callBot(sentence):
+
+    def callBot(userID,callbackKey,sentence):
         """ Use the previously instantiated bot to predict a response to the given sentence
         Args:
             sentence (str): the question to answer
@@ -60,8 +58,6 @@ class ChatbotManager(AppConfig):
         """
 
         if ChatbotManager.bot:
-            if ChatbotManager.bot.callbackKey == 'firstcall' :
-                ChatbotManager.bot.userID = sentence
-            return ChatbotManager.bot.daemonPredict(sentence)
+            return ChatbotManager.bot.daemonPredict(userID,callbackKey,sentence)
         else:
             logger.error('Error: Bot not initialized!')

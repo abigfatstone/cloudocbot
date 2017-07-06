@@ -3,6 +3,7 @@ from channels.sessions import channel_session
 import logging
 import sys
 import json
+import re
 
 from .chatbotmanager import ChatbotManager
 
@@ -33,7 +34,6 @@ def ws_connect(message):
         message.channel_session['room'] = clientName
         message.reply_channel.send({'accept': True})
         Group(clientName).send({'text': json.dumps({'message': '欢迎使用小i，请问尊姓大名？'})})
-        ChatbotManager.resetID()
         
 @channel_session
 def ws_receive(message):
@@ -43,15 +43,22 @@ def ws_receive(message):
     """
     # Get client info
     clientName = message.channel_session['room']
+    #message.channel_session['cs_callbackKey']='firstcall'
     data = json.loads(message['text'])
-
     # Compute the prediction
-    question = data['message']
+    userSaid = ''.join(data['message']).split('@userid@')
+    userID=userSaid[1]
+    callbackKey='firstcall'
+    if userID == 'null':
+        userID=clientName
     try:
-        answer = ChatbotManager.callBot(question)
-        answer = answer + "<a href='baidu.com'>baidu</a>"
+        sysSaid = ChatbotManager.callBot(userID,'firstcall',userSaid[0])
+        answer=sysSaid[0]
+        callbackKey=sysSaid[1]
+        #answer = answer + "<a href='baidu.com'>baidu</a>"
+        answer += "<p><input type='checkbox' name='option' value='上海' />上海</p><p><input type='checkbox' name='option' value='北京' />北京</p><p><a href='javascript:void(0)' style='color:red' id='sendOption'> 提交</a></p>"
     except:  # Catching all possible mistakes
-        logger.error('{}: Error with this question {}'.format(clientName, question))
+        logger.error('{}: Error with this question {}'.format(clientName, userSaid))
         logger.error("Unexpected error:", sys.exc_info()[0])
         answer = 'Error: Internal problem'
 
@@ -59,7 +66,7 @@ def ws_receive(message):
     if not answer:
         answer = 'Error: Try a shorter sentence'
 
-    logger.info('{}: {} -> {}'.format(clientName, question, answer))
+    logger.info('{}: {} -> {}'.format(clientName, userSaid, answer))
 
     # Send the prediction back
     Group(clientName).send({'text': json.dumps({'message': answer})})

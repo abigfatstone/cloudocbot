@@ -1,5 +1,13 @@
 // Credits goes to https://blog.heroku.com/in_deep_with_django_channels_the_future_of_real_time_apps_in_django
 
+
+ function getQueryString(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+        var r = window.location.search.substr(1).match(reg);
+        if (r != null) return unescape(r[2]); return null;
+    }
+
+
 $(function() {
 
     // When using HTTPS, use WSS too.
@@ -15,16 +23,34 @@ $(function() {
         );
     };
 
+   
+
+    $(document).on("click","#sendOption", function(event) {
+        // var options= $('input[type=checkbox]:checked').each(function(ele, index){
+            //     message_val
+            // })
+          
+       var message_val =  '北京=1'     
+       var message = {message: message_val};
+       chatsock.send(JSON.stringify(message));
+       chat_zone.prepend(
+        $("<p class='question'></p>").html('You: ' + message_val)
+        );      
+    })
+
     $("#chat_form").on("submit", function(event) {
 
         try {
             var message_elem = $('#message');
             var message_val = message_elem.val();
+            // var options= $('input[type=checkbox]:checked').each(function(ele, index){
+            //     message_val
+            // })
 
             if (message_val) {
                 // Send the message
                 var message = {
-                    message: message_val
+                    message: message_val + '@userid@' + getQueryString('userid') 
                 };
                 chatsock.send(JSON.stringify(message));
                 message_elem.val('').focus();
