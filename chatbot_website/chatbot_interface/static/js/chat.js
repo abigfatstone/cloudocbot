@@ -25,18 +25,18 @@ $(function() {
 
    
 
-    $(document).on("click","#sendOption", function(event) {
-        //
-        // var options= $('input[type=checkbox]:checked').each(function(ele, index){
-        //         message_val  = message_val;
-        //     })
-          
-       var message_val =  '北京=1'  + '@userid@' + getQueryString('UserID')  
-       var message = {message: message_val  };
-       chatsock.send(JSON.stringify(message));
-       chat_zone.prepend(
-        $("<p class='question'></p>").html('You: ' + message_val)
-        );      
+   $(document).on("click","#sendOption", function(event) {       
+    var options= '';       
+    $(this).parents('.answer').find('input[type=checkbox]:checked').each(function(index, ele){           
+            options = options + ele.value + '=1;';       
+        })       
+        console.log('select options:', options)       
+        options = options + '@user_id@: ' + getQueryString('key');       
+        var message = {message: options };       
+        chatsock.send(JSON.stringify(message));       
+        chat_zone.prepend(     
+            $("<p class='question'></p >").html('You: ' + options)        
+         );          
     })
 
     $("#chat_form").on("submit", function(event) {
@@ -44,9 +44,6 @@ $(function() {
         try {
             var message_elem = $('#message');
             var message_val = message_elem.val();
-            // var options= $('input[type=checkbox]:checked').each(function(ele, index){
-            //     message_val
-            // })
 
             if (message_val) {
                 // Send the message

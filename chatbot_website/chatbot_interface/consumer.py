@@ -31,7 +31,7 @@ def ws_connect(message):
         Group(clientName).add(message.reply_channel)  # Answer back to the client
         message.channel_session['room'] = clientName
         message.reply_channel.send({'accept': True})
-        Group(clientName).send({'text': json.dumps({'message': '欢迎使用小i，请问尊姓大名？'})})
+        #Group(clientName).send({'text': json.dumps({'message': '欢迎使用小i，请问尊姓大名？'})})
         
 @channel_session
 def ws_receive(message):

@@ -152,7 +152,7 @@ class Chatbot:
     def prc_get_main_symptom(self,in_userID,in_callbackKey,in_sentence):
         sysSaid  = ['','','','']
         print('===============================')
-        print('         start ask symptom')
+        print('         start ask symptom     ')
         print('===============================')
         conn= pymysql.connect(host=self.mysqlHost , port = self.mysqlPort , user = self.mysqlUser , passwd=self.mysqlPassword , db =self.mysqlDB , charset=self.mysqlCharset)
         cur = conn.cursor()
@@ -184,10 +184,9 @@ class Chatbot:
                 return_list  =  return_list + '@L2@' + r0[1] 
 
             sysSaid = [in_userID,'ask_symptom',return_list,'checkbox']
-            
+
         else:
             sysSaid = [in_userID,'ask_symptom','无法找打相关的疾病，请重新输入','text']
-
 
         return sysSaid
         
