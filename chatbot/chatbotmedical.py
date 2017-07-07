@@ -9,8 +9,6 @@ import pymysql
 class Chatbot:
 
     class RunMode:
-        """ Simple structure representing the different testing modes
-        """
         INTERACTIVE = 'interactive'
         DAEMON ='daemon'
 
@@ -25,11 +23,7 @@ class Chatbot:
 
     @staticmethod
     def parseArgs(args):
-        """
-        Parse the arguments from the given command line
-        Args:
-            args (list<str>): List of arguments to parse. If None, the default sys.argv will be parsed
-        """
+
 
         parser = argparse.ArgumentParser()
 
@@ -46,9 +40,7 @@ class Chatbot:
         return parser.parse_args(args)
 
     def main(self, args=None):#
-        """
-        Launch the training and/or the interactive mode
-        """
+
         print('Welcome to cloudocBot v0.1 !')
 
         # General initialisation
@@ -67,17 +59,13 @@ class Chatbot:
 
 
     def chatInteractive(self):
-        """ Try predicting the sentences that the user will enter in the console
-        Args:
-            sess: The current running session
-        """
         print('')
 
         p_userid = self.getUserID()
-        p_callbackKey  ='firstcall'
+        p_callbackKey = 'firstcall'
 
         sysSaid = self.daemonPredict(p_userid,p_callbackKey ,p_userid)
-        p_callbackKey =sysSaid[1]
+        p_callbackKey = sysSaid[1]
         print('{}{}'.format(self.SENTENCES_PREFIX[0],sysSaid[2]))
 
         while True:
@@ -92,49 +80,98 @@ class Chatbot:
 
     def daemonPredict(self, in_userID,in_callbackKey,in_sentence):
 
+        p_callbackKey = ''
         conn= pymysql.connect(host=self.mysqlHost , port = self.mysqlPort , user = self.mysqlUser , passwd=self.mysqlPassword , db =self.mysqlDB , charset=self.mysqlCharset)
         cur = conn.cursor()
-
-        p_callbackKey=in_callbackKey
         
-        ''' get last call back key from server
-        ''' 
-        
+        #get last call back key from server 
         v_sql='select callback_key from t_user_callback where user_id=\''+in_userID+'\''
+        print(v_sql)
         cur.execute(v_sql)
-        if (cur.rowcount>0):
-            for r in cur.fetchall():
-                p_callbackKey = r[0]
-            else:
-                p_callbackKey == 'firstcall'
+        for r in cur.fetchall():
+            p_callbackKey  = r[0]
+
+        print('0.'+p_callbackKey)
         
+        if p_callbackKey == '':
+            p_callbackKey = 'firstcall'
 
-        v_sql="call prc_main('"+in_userID+"','"+p_callbackKey+"','"+in_sentence+"')"
-        print(v_sql)
-        cur.execute(v_sql)
-        sysSaid=['','','']
-        if (cur.rowcount>0):
-            for r in cur.fetchall():
-                sysSaid[0]  = r[0]
-                sysSaid[1]  = r[1]
-                sysSaid[2] = sysSaid[2]+'\n'+r[2]
+        sysSaid=self.mainPredict(in_userID,p_callbackKey,in_sentence) 
+        p_callbackKey=sysSaid[1]
+        print('1.'+p_callbackKey)
 
 
-        #insert callback key back to server    
         v_sql='insert into t_user_callback(user_id,callback_key) select \''+in_userID+'\',\''+p_callbackKey+'\' ON DUPLICATE KEY UPDATE callback_key=\''+p_callbackKey+'\''
-        print(v_sql)
         cur.execute(v_sql)  
         conn.commit()
-        
-        # close connection
         conn.close()    
 
         return sysSaid
 
-    
+
+    def mainPredict(self, in_userID,in_callbackKey,in_sentence):
+        sysSaid = ['','','','']
+
+        print('#=====================================')
+        print('call mainPredict('+in_userID+','+in_callbackKey+','+in_sentence+')')
+        print('#=====================================')
+
+        conn= pymysql.connect(host=self.mysqlHost , port = self.mysqlPort , user = self.mysqlUser , passwd=self.mysqlPassword , db =self.mysqlDB , charset=self.mysqlCharset)
+        cur = conn.cursor()
+
+        
+        v_sql="select count(1) from chatbot_symptom where symptom_name like \'%"+ in_sentence+"%\'"
+        print(v_sql)
+        cur.execute(v_sql)
+        p_hit_cnt = 0
+        for r in cur.fetchall():
+            p_hit_cnt  = r[0]
+
+        if (p_hit_cnt > 0) :
+            in_callbackKey = 'ask_symptom'
+        
+        if in_callbackKey == 'firstcall':  
+            sysSaid = [in_userID,'ask_symptom','欢迎使用小i，这是您第一次使用小，请问您的主症状？','text'] 
+
+        elif in_callbackKey == 'ask_symptom':
+            sysSaid = self.prc_get_main_symptom(in_userID,in_callbackKey,in_sentence);
+
+
+        elif in_sentence == 'cleanup':
+            cur.execute('DELETE FROM t_patient_symptom')  
+            conn.commit()
+            cur.execute('DELETE FROM t_user_callback')  
+            conn.commit()
+            sysSaid = [in_userID,in_callbackKey,'cleanup is done','text'] 
+     
+        elif in_callbackKey == 'auto' :  
+             sysSaid = [in_userID,'auto','undefine function','text'] 
+
+        return sysSaid
+
+    def prc_get_main_symptom(self,in_userID,in_callbackKey,in_sentence):
+        sysSaid  = ['','','','']
+        print('===============================')
+        print('         start ask symptom')
+        print('===============================')
+        conn= pymysql.connect(host=self.mysqlHost , port = self.mysqlPort , user = self.mysqlUser , passwd=self.mysqlPassword , db =self.mysqlDB , charset=self.mysqlCharset)
+        cur = conn.cursor()
+        v_sql = 'select disease_name ,symptom_name ,rank rank1,note from chatbot_symptom '+  \
+              ' where disease_name in ('+ \
+                        ' select disease_name from chatbot_symptom where symptom_name like \'%'+in_sentence+'%\' and note is null '+ \
+                         ' group by disease_name,rank,symptom_name order by disease_name,rank desc,symptom_name'+ \
+                ')'
+        print(v_sql)
+        cur.execute(v_sql)
+        symptom_list='you disease is '
+        for r in cur.fetchall():
+            symptom_list  = symptom_list+r[0] + '@symptom@ 1'
+        
+        sysSaid = [in_userID,'ask_symptom',symptom_list,'checkbox']
+        return sysSaid
+        
     def daemonClose(self):
-        """ A utility function to close the daemon when finish
-        """
+
         print('Exiting the daemon mode...')
         self.sess.close()
         print('Daemon closed.')
@@ -146,11 +183,7 @@ class Chatbot:
 
 
     def loadModelParams(self):
-        """ Load the some values associated with the current model, like the current globStep value
-        """
-
         configName = os.path.join(self.args.rootDir, self.CONFIG_FILENAME)
-
         if os.path.exists(configName):
             # Loading
             config = configparser.ConfigParser()

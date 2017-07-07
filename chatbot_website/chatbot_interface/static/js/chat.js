@@ -30,8 +30,8 @@ $(function() {
             //     message_val
             // })
           
-       var message_val =  '北京=1'     
-       var message = {message: message_val};
+       var message_val =  '北京=1'   + '@userid@' + getQueryString('UserID')  
+       var message = {message: message_val  };
        chatsock.send(JSON.stringify(message));
        chat_zone.prepend(
         $("<p class='question'></p>").html('You: ' + message_val)

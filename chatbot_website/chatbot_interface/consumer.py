@@ -3,10 +3,8 @@ from channels.sessions import channel_session
 import logging
 import sys
 import json
-import re
 
 from .chatbotmanager import ChatbotManager
-
 
 logger = logging.getLogger(__name__)
 
@@ -52,16 +50,27 @@ def ws_receive(message):
     p_callbackKey='firstcall'
 
     if userID == 'null':
-        userID=clientName
+        userID = clientName
 
     try:
         sysSaid = ChatbotManager.callBot(userID,p_callbackKey,userInput[0])
 
         callbackKey=sysSaid[1]
-        answer=sysSaid[2]
+        answer = '' 
+        if sysSaid[3] == 'checkbox':
+            p_output=sysSaid[2].split('@sentence@')
+            check_list = p_output[1].split('@symptom@')
 
-        #answer = answer + "<a href='baidu.com'>baidu</a>"
-        answer += "<p><input type='checkbox' name='option' value='上海' />上海</p><p><input type='checkbox' name='option' value='北京' />北京</p><p><a href='javascript:void(0)' style='color:red' id='sendOption'> 提交</a></p>"
+            answer = p_output[0]
+            #answer = answer + "<p><input type='checkbox' name='option' value='"+check_list[0]+"' />"+check_list[0]+"</p><p><input type='checkbox' name='option' value='北京' />北京</p><p><a href='javascript:void(0)' style='color:red' id='sendOption'> 提交</a></p>"
+            for list_symptom in check_list:
+                answer=answer+ "<p><input type='checkbox' name='option' value='"+list_symptom+"' />"+list_symptom+"</p>"
+
+            answer=answer+"<p><a href='javascript:void(0)' style='color:red' id='sendOption'> 提交</a></p>"
+
+        else:
+            answer=sysSaid[2]
+
     except:  # Catching all possible mistakes
         logger.error('{}: Error with this question {}'.format(clientName, userInput))
         logger.error("Unexpected error:", sys.exc_info()[0])
