@@ -6,6 +6,8 @@ import datetime  # Chronometer
 import os  # Files management
 import pymysql
 
+from chatbot.symptomModel import SymptomModel
+
 class Chatbot:
 
     class RunMode:
@@ -16,7 +18,8 @@ class Chatbot:
     def __init__(self):
         # Model/dataset parameters
         self.args = None
-        
+        self.symptomModel = None  # Dataset
+
         self.CONFIG_FILENAME = 'params.ini'
         self.SENTENCES_PREFIX = ['AI: ', 'me: ']
 
@@ -51,6 +54,8 @@ class Chatbot:
 
         self.loadModelParams()
 
+        self.symptomModel = SymptomModel(self.args)
+
         if not self.args.rootDir:
             self.args.rootDir = os.getcwd()  # Use the current working directory
 
@@ -80,31 +85,21 @@ class Chatbot:
 
     def daemonPredict(self, in_userID,in_callbackKey,in_sentence):
 
-        p_callbackKey = ''
-        conn= pymysql.connect(host=self.mysqlHost , port = self.mysqlPort , user = self.mysqlUser , passwd=self.mysqlPassword , db =self.mysqlDB , charset=self.mysqlCharset)
-        cur = conn.cursor()
-        
-        #get last call back key from server 
-        v_sql='select callback_key from t_user_callback where user_id=\''+in_userID+'\''
-        print(v_sql)
-        cur.execute(v_sql)
-        for r in cur.fetchall():
-            p_callbackKey  = r[0]
+        p_callbackKey = in_callbackKey
 
-        print('0.'+p_callbackKey)
-        
-        if p_callbackKey == '':
-            p_callbackKey = 'firstcall'
+        #===============================
+        #get callback key from database
+        #===============================
+        p_callbackKey = self.symptomModel.getCallbackKeyfromDB(in_userID,p_callbackKey,in_sentence) 
+        print('callbackKey before run is ' + p_callbackKey )
 
         sysSaid=self.mainPredict(in_userID,p_callbackKey,in_sentence) 
+
+        #===============================
+        #set back callback key to database
+        #===============================
         p_callbackKey=sysSaid[1]
-        print('1.'+p_callbackKey)
-
-
-        v_sql='insert into t_user_callback(user_id,callback_key) select \''+in_userID+'\',\''+p_callbackKey+'\' ON DUPLICATE KEY UPDATE callback_key=\''+p_callbackKey+'\''
-        cur.execute(v_sql)  
-        conn.commit()
-        conn.close()    
+        print('callbackKey after run is ' + p_callbackKey)  
 
         return sysSaid
 
@@ -116,82 +111,32 @@ class Chatbot:
         print('call mainPredict('+in_userID+','+in_callbackKey+','+in_sentence+')')
         print('#=====================================')
 
-        conn= pymysql.connect(host=self.mysqlHost , port = self.mysqlPort , user = self.mysqlUser , passwd=self.mysqlPassword , db =self.mysqlDB , charset=self.mysqlCharset)
+        conn= pymysql.connect(host=self.args.mysqlHost , port = self.args.mysqlPort , user = self.args.mysqlUser , passwd=self.args.mysqlPassword , db =self.args.mysqlDB , charset=self.args.mysqlCharset)
         cur = conn.cursor()
 
-        
-        v_sql="select count(1) from chatbot_symptom where symptom_name like \'%"+ in_sentence+"%\'"
-        print(v_sql)
-        cur.execute(v_sql)
-        p_hit_cnt = 0
-        for r in cur.fetchall():
-            p_hit_cnt  = r[0]
 
-        if (p_hit_cnt > 0) :
+        v_sql="select count(1) from chatbot_symptom where symptom_name like \'%"+ in_sentence+"%\'"
+        cur.execute(v_sql)
+        p_hit_cnt = cur.fetchone()
+        if (p_hit_cnt[0] > 0) :
             in_callbackKey = 'ask_symptom'
         
-        if in_callbackKey == 'firstcall':  
-            sysSaid = [in_userID,'ask_symptom','欢迎使用小i，这是您第一次使用小，请问您的主症状？','text'] 
+        if in_sentence.lower() == 'cleanup':
+            sysSaid = self.symptomModel.cleanup(in_userID,in_callbackKey,in_sentence)
+
+        elif in_callbackKey == 'firstcall':  
+            sysSaid = self.symptomModel.firstcall(in_userID,in_callbackKey,in_sentence)
 
         elif in_callbackKey == 'ask_symptom':
-            sysSaid = self.prc_get_main_symptom(in_userID,in_callbackKey,in_sentence);
-
-
-        elif in_sentence == 'cleanup':
-            cur.execute('DELETE FROM t_patient_symptom')  
-            conn.commit()
-            cur.execute('DELETE FROM t_user_callback')  
-            conn.commit()
-            sysSaid = [in_userID,in_callbackKey,'cleanup is done','text'] 
+            sysSaid = self.symptomModel.prc_get_main_symptom(in_userID,in_callbackKey,in_sentence)
      
-        elif in_callbackKey == 'auto' :  
+        else:  
              sysSaid = [in_userID,'auto','undefine function','text'] 
 
         return sysSaid
 
-    def prc_get_main_symptom(self,in_userID,in_callbackKey,in_sentence):
-        sysSaid  = ['','','','']
-        print('===============================')
-        print('         start ask symptom     ')
-        print('===============================')
-        conn= pymysql.connect(host=self.mysqlHost , port = self.mysqlPort , user = self.mysqlUser , passwd=self.mysqlPassword , db =self.mysqlDB , charset=self.mysqlCharset)
-        cur = conn.cursor()
-
-        return_list = ''
-        v_sql = 'select distinct disease_name from chatbot_symptom where symptom_name like \'%'+in_sentence+'%\' and note is null'
-        row_count = cur.execute(v_sql)
-        if row_count >0 :
-
-            return_list = '根据您所描述的症状提示您可能存在以下疾病：'
-            r1 = cur.fetchone()
-            return_list = return_list + '@L2@' + r1[0]
-            for r0 in cur.fetchall():
-                return_list  =  return_list + '@L2@' + r0[0] 
-
-            return_list = return_list + '@L2@为更好的服务您，我们需要进一步了解您是否还具有以下其他症状：@L1@'
-
-            v_sql = 'select distinct disease_name ,symptom_name ,rank rank1,note from chatbot_symptom '+  \
-                    ' where disease_name in ('+ \
-                            ' select disease_name from chatbot_symptom where symptom_name like \'%'+in_sentence+'%\' and note is null '+ \
-                             ' group by disease_name,rank,symptom_name order by disease_name,rank desc,symptom_name'+ \
-                    ') limit 3'
-            print(v_sql)
-
-            row_count = cur.execute(v_sql)
-            r1 = cur.fetchone()
-            return_list = return_list + r1[1]
-            for r0 in cur.fetchall():
-                return_list  =  return_list + '@L2@' + r0[1] 
-
-            sysSaid = [in_userID,'ask_symptom',return_list,'checkbox']
-
-        else:
-            sysSaid = [in_userID,'ask_symptom','无法找打相关的疾病，请重新输入','text']
-
-        return sysSaid
         
     def daemonClose(self):
-
         print('Exiting the daemon mode...')
         self.sess.close()
         print('Daemon closed.')
@@ -210,10 +155,10 @@ class Chatbot:
             config.read(configName)
 
             # Restoring the the parameters
-            self.mysqlHost = config['dbConnection'].get('mysqlHost')
-            self.mysqlPort = config['dbConnection'].getint('mysqlPort')
-            self.mysqlUser = config['dbConnection'].get('mysqlUser')
-            self.mysqlPassword = config['dbConnection'].get('mysqlPassword')
-            self.mysqlDB = config['dbConnection'].get('mysqlDB')
-            self.mysqlCharset = config['dbConnection'].get('mysqlCharset')
+            self.args.mysqlHost = config['dbConnection'].get('mysqlHost')
+            self.args.mysqlPort = config['dbConnection'].getint('mysqlPort')
+            self.args.mysqlUser = config['dbConnection'].get('mysqlUser')
+            self.args.mysqlPassword = config['dbConnection'].get('mysqlPassword')
+            self.args.mysqlDB = config['dbConnection'].get('mysqlDB')
+            self.args.mysqlCharset = config['dbConnection'].get('mysqlCharset')
             

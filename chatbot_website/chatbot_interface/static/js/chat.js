@@ -18,7 +18,7 @@ $(function() {
     chatsock.onmessage = function(message) {
         console.log('remote message', message.data)
         var data = JSON.parse(message.data);
-        chat_zone.prepend(
+        chat_zone.append(
             $("<p class='answer'></p>").html('Bot: ' + data.message)
         );
     };
@@ -34,7 +34,7 @@ $(function() {
         options = options + '@user_id@: ' + getQueryString('key');       
         var message = {message: options };       
         chatsock.send(JSON.stringify(message));       
-        chat_zone.prepend(     
+        chat_zone.append(     
             $("<p class='question'></p >").html('You: ' + options)        
          );          
     })
@@ -54,7 +54,7 @@ $(function() {
                 message_elem.val('').focus();
 
                 // Add the message to the chat
-                chat_zone.prepend(
+                chat_zone.append(
                     $("<p class='question'></p>").html('You: ' + message_val)
                 );
             }

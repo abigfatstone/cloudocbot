@@ -35,15 +35,9 @@ def ws_connect(message):
         
 @channel_session
 def ws_receive(message):
-    """ Called when a client send a message
-    Args:
-        message (Obj): object containing the client query
-    """
-    # Get client info
+
     clientName = message.channel_session['room']
-    #message.channel_session['cs_callbackKey']='firstcall'
     data = json.loads(message['text'])
-    # Compute the prediction
     userInput = ''.join(data['message']).split('@userid@')
     userID=userInput[1]
 
@@ -85,7 +79,7 @@ def split_line(inputLine):
     line  = ''
     inputList =  inputLine.split('@L2@') 
     for inputOne in inputList:
-        line = line + '<p>-' + inputOne + '-</p>'
+        line = line + '<p>' + inputOne + '</p>'
     return line    
 
 def split_checkbox(inputLine):
