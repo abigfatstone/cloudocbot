@@ -26,11 +26,12 @@ $(function() {
    
 
     $(document).on("click","#sendOption", function(event) {
+        //
         // var options= $('input[type=checkbox]:checked').each(function(ele, index){
-            //     message_val
-            // })
+        //         message_val  = message_val;
+        //     })
           
-       var message_val =  '北京=1'   + '@userid@' + getQueryString('UserID')  
+       var message_val =  '北京=1'  + '@userid@' + getQueryString('UserID')  
        var message = {message: message_val  };
        chatsock.send(JSON.stringify(message));
        chat_zone.prepend(

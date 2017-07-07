@@ -156,18 +156,39 @@ class Chatbot:
         print('===============================')
         conn= pymysql.connect(host=self.mysqlHost , port = self.mysqlPort , user = self.mysqlUser , passwd=self.mysqlPassword , db =self.mysqlDB , charset=self.mysqlCharset)
         cur = conn.cursor()
-        v_sql = 'select disease_name ,symptom_name ,rank rank1,note from chatbot_symptom '+  \
-              ' where disease_name in ('+ \
-                        ' select disease_name from chatbot_symptom where symptom_name like \'%'+in_sentence+'%\' and note is null '+ \
-                         ' group by disease_name,rank,symptom_name order by disease_name,rank desc,symptom_name'+ \
-                ')'
-        print(v_sql)
-        cur.execute(v_sql)
-        symptom_list='you disease is '
-        for r in cur.fetchall():
-            symptom_list  = symptom_list+r[0] + '@symptom@ 1'
-        
-        sysSaid = [in_userID,'ask_symptom',symptom_list,'checkbox']
+
+        return_list = ''
+        v_sql = 'select distinct disease_name from chatbot_symptom where symptom_name like \'%'+in_sentence+'%\' and note is null'
+        row_count = cur.execute(v_sql)
+        if row_count >0 :
+
+            return_list = '根据您所描述的症状提示您可能存在以下疾病：'
+            r1 = cur.fetchone()
+            return_list = return_list + '@L2@' + r1[0]
+            for r0 in cur.fetchall():
+                return_list  =  return_list + '@L2@' + r0[0] 
+
+            return_list = return_list + '@L2@为更好的服务您，我们需要进一步了解您是否还具有以下其他症状：@L1@'
+
+            v_sql = 'select distinct disease_name ,symptom_name ,rank rank1,note from chatbot_symptom '+  \
+                    ' where disease_name in ('+ \
+                            ' select disease_name from chatbot_symptom where symptom_name like \'%'+in_sentence+'%\' and note is null '+ \
+                             ' group by disease_name,rank,symptom_name order by disease_name,rank desc,symptom_name'+ \
+                    ') limit 3'
+            print(v_sql)
+
+            row_count = cur.execute(v_sql)
+            r1 = cur.fetchone()
+            return_list = return_list + r1[1]
+            for r0 in cur.fetchall():
+                return_list  =  return_list + '@L2@' + r0[1] 
+
+            sysSaid = [in_userID,'ask_symptom',return_list,'checkbox']
+            
+        else:
+            sysSaid = [in_userID,'ask_symptom','无法找打相关的疾病，请重新输入','text']
+
+
         return sysSaid
         
     def daemonClose(self):

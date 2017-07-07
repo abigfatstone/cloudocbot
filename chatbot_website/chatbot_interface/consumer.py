@@ -58,15 +58,11 @@ def ws_receive(message):
         callbackKey=sysSaid[1]
         answer = '' 
         if sysSaid[3] == 'checkbox':
-            p_output=sysSaid[2].split('@sentence@')
-            check_list = p_output[1].split('@symptom@')
-
-            answer = p_output[0]
-            #answer = answer + "<p><input type='checkbox' name='option' value='"+check_list[0]+"' />"+check_list[0]+"</p><p><input type='checkbox' name='option' value='北京' />北京</p><p><a href='javascript:void(0)' style='color:red' id='sendOption'> 提交</a></p>"
-            for list_symptom in check_list:
-                answer=answer+ "<p><input type='checkbox' name='option' value='"+list_symptom+"' />"+list_symptom+"</p>"
-
-            answer=answer+"<p><a href='javascript:void(0)' style='color:red' id='sendOption'> 提交</a></p>"
+            p_output = sysSaid[2].split('@L1@')
+            print(p_output[0])
+            answer = split_line(p_output[0])
+            answer = answer + split_checkbox(p_output[1])
+            answer=answer + "<p><a href='javascript:void(0)' style='color:red' id='sendOption'> 提交</a></p>"
 
         else:
             answer=sysSaid[2]
@@ -85,6 +81,20 @@ def ws_receive(message):
     # Send the prediction back
     Group(clientName).send({'text': json.dumps({'message': answer})})
 
+def split_line(inputLine):
+    line  = ''
+    inputList =  inputLine.split('@L2@') 
+    for inputOne in inputList:
+        line = line + '<p>-' + inputOne + '-</p>'
+    return line    
+
+def split_checkbox(inputLine):
+    line = ''
+    check_list = inputLine.split('@L2@')
+    for check_one in check_list:
+        line = line+ "<p><input type='checkbox' name='option' value='"+check_one+"' />"+check_one+"</p>"
+    return line    
+
 @channel_session
 def ws_disconnect(message):
     """ Called when a client disconnect
@@ -94,3 +104,13 @@ def ws_disconnect(message):
     clientName = message.channel_session['room']
     logger.info('Client disconnected: {}'.format(clientName))
     Group(clientName).discard(message.reply_channel)
+
+
+
+
+
+
+
+
+
+
