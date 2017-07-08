@@ -26,12 +26,12 @@ $(function() {
    
 
    $(document).on("click","#sendOption", function(event) {       
-    var options= '';       
+    var options= '已选择了下述选项:';       
     $(this).parents('.answer').find('input[type=checkbox]:checked').each(function(index, ele){           
-            options = options + ele.value + '=1;';       
+            options = options + ele.value + ',';       
         })       
         console.log('select options:', options)       
-        options = options + '@user_id@: ' + getQueryString('key');       
+        options = options + '@user_id@: ' + getQueryString('UserID');       
         var message = {message: options };       
         chatsock.send(JSON.stringify(message));       
         chat_zone.append(     

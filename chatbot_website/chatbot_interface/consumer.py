@@ -56,7 +56,7 @@ def ws_receive(message):
             print(p_output[0])
             answer = split_line(p_output[0])
             answer = answer + split_checkbox(p_output[1])
-            answer=answer + "<p><a href='javascript:void(0)' style='color:red' id='sendOption'> 提交</a></p>"
+            answer=answer + "<p align='right'><a href='javascript:void(0)' style='color:red' id='sendOption'> 提交</a></p>"
 
         else:
             answer=sysSaid[2]

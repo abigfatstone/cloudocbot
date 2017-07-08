@@ -7,6 +7,7 @@ import os  # Files management
 import pymysql
 
 from chatbot.symptomModel import SymptomModel
+from chatbot.mainModel import MainModel
 
 class Chatbot:
 
@@ -55,6 +56,7 @@ class Chatbot:
         self.loadModelParams()
 
         self.symptomModel = SymptomModel(self.args)
+        self.mainModel = MainModel(self.args)
 
         if not self.args.rootDir:
             self.args.rootDir = os.getcwd()  # Use the current working directory
@@ -90,7 +92,8 @@ class Chatbot:
         #===============================
         #get callback key from database
         #===============================
-        p_callbackKey = self.symptomModel.getCallbackKeyfromDB(in_userID,p_callbackKey,in_sentence) 
+        if in_callbackKey != 'firstcall':
+            p_callbackKey = self.mainModel.getCallbackKeyfromDB(in_userID,p_callbackKey,in_sentence) 
         print('callbackKey before run is ' + p_callbackKey )
 
         sysSaid=self.mainPredict(in_userID,p_callbackKey,in_sentence) 
@@ -114,7 +117,6 @@ class Chatbot:
         conn= pymysql.connect(host=self.args.mysqlHost , port = self.args.mysqlPort , user = self.args.mysqlUser , passwd=self.args.mysqlPassword , db =self.args.mysqlDB , charset=self.args.mysqlCharset)
         cur = conn.cursor()
 
-
         v_sql="select count(1) from chatbot_symptom where symptom_name like \'%"+ in_sentence+"%\'"
         cur.execute(v_sql)
         p_hit_cnt = cur.fetchone()
@@ -122,10 +124,10 @@ class Chatbot:
             in_callbackKey = 'ask_symptom'
         
         if in_sentence.lower() == 'cleanup':
-            sysSaid = self.symptomModel.cleanup(in_userID,in_callbackKey,in_sentence)
+            sysSaid = self.mainModel.cleanup(in_userID,in_callbackKey,in_sentence)
 
         elif in_callbackKey == 'firstcall':  
-            sysSaid = self.symptomModel.firstcall(in_userID,in_callbackKey,in_sentence)
+            sysSaid = self.mainModel.firstcall(in_userID,in_callbackKey,in_sentence)
 
         elif in_callbackKey == 'ask_symptom':
             sysSaid = self.symptomModel.prc_get_main_symptom(in_userID,in_callbackKey,in_sentence)
