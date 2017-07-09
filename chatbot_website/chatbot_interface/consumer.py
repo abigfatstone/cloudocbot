@@ -39,7 +39,7 @@ def ws_receive(message):
     clientName = message.channel_session['room']
     data = json.loads(message['text'])
     userInput = ''.join(data['message']).split('@userid@')
-    userID=userInput[1]
+    userID = userInput[1]
 
     p_callbackKey=''
 
@@ -51,12 +51,19 @@ def ws_receive(message):
 
         callbackKey=sysSaid[1]
         answer = '' 
+
         if sysSaid[3] == 'checkbox':
             p_output = sysSaid[2].split('@L1@')
             answer = split_line(p_output[0])
             answer = answer + split_checkbox(p_output[1])
             answer=answer + "<p align='right'><a href='javascript:void(0)' style='color:red' id='sendOption'> 提交</a></p>"
-
+       
+        elif sysSaid[3] == 'table':
+            p_output = sysSaid[2].split('@L1@')
+            answer = '<table width = \'90%\'>'
+            for table_line in p_output:
+                answer = answer + '<tr>' + split_tab(table_line) + '</tr>'
+            answer = answer + '</table> '   
         else:
             answer=sysSaid[2]
 
@@ -79,6 +86,13 @@ def split_line(inputLine):
     inputList =  inputLine.split('@L2@') 
     for inputOne in inputList:
         line = line + '<p>' + inputOne + '</p>'
+    return line    
+
+def split_tab(inputLine):
+    line  = ''
+    inputList =  inputLine.split('@L2@') 
+    for inputOne in inputList:
+        line = line + '<td>' + inputOne + '</td>'
     return line    
 
 def split_checkbox(inputLine):

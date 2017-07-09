@@ -26,11 +26,18 @@ $(function() {
    
 
    $(document).on("click","#sendOption", function(event) {       
-    var options= '已选择了下述选项:'; 
+    var options= '已选择了下述选项:' ; 
     var return_list = '';      
     $(this).parents('.answer').find('input[type=checkbox]:checked').each(function(index, ele){           
-            options = options + ele.value + ',';  
-            return_list = return_list + ele.value + '@L1@';     
+            if (options == '已选择了下述选项:') {
+                options = options + ele.value ;  
+                return_list = return_list + ele.value + '=1' ; 
+            } 
+            else
+            {
+                options = options + ',' + ele.value ;  
+                return_list = return_list + '@L1@' + ele.value + '=1' ; 
+            }    
         })       
         console.log('select options:', options)             
         var message = {message: return_list + '@userid@' + getQueryString('UserID') };       

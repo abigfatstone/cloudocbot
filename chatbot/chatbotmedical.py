@@ -121,17 +121,20 @@ class Chatbot:
         conn= pymysql.connect(host=self.args.mysqlHost , port = self.args.mysqlPort , user = self.args.mysqlUser , passwd=self.args.mysqlPassword , db =self.args.mysqlDB , charset=self.args.mysqlCharset)
         cur = conn.cursor()
 
-
         v_sql="select count(1) from chatbot_symptom where symptom_name like \'%"+ in_sentence+"%\'"
         cur.execute(v_sql)
         p_hit_cnt = cur.fetchone()
-        if (p_hit_cnt[0] > 0) :
+        if (p_hit_cnt[0] > 0) and len(in_sentence) >1 :
             in_callbackKey = 'ask_symptom'
             sysSaid = self.symptomModel.prc_ask_symptom(in_userID,in_callbackKey,in_sentence)
+            p_symptom_list = self.symptomModel.prc_insert_symptom(in_userID,'子症状',1,3)
+            p_symptom_list = self.symptomModel.prc_insert_symptom(in_userID,'症状',0.5,3)
+            p_symptom_list = self.symptomModel.prc_insert_symptom(in_userID,'实验',0.5,3)
+            p_symptom_list = self.symptomModel.prc_insert_symptom(in_userID,'合并疾病',0.5,3)
             p_callbackKey = sysSaid[1]
-            p_sentence =sysSaid[2]
+            p_sentence = sysSaid[2]
 
-        print('callback key after check symptom is ' + p_callbackKey)
+        print('callbackkey after check symptom is ' + p_callbackKey)
 
         if in_sentence.lower() == 'cleanup':
             sysSaid = self.mainModel.cleanup(in_userID,p_callbackKey,p_sentence)
@@ -140,10 +143,8 @@ class Chatbot:
             sysSaid = self.mainModel.firstcall(in_userID,p_callbackKey,p_sentence)
 
         elif p_callbackKey == 'set_symptom':
-            sysSaid = self.symptomModel.prc_set_symptom(in_userID,p_callbackKey,p_sentence)
+            sysSaid = self.symptomModel.prc_main_symptom(in_userID,p_callbackKey,p_sentence)
      
-        elif p_callbackKey == 'set_symptom':
-            sysSaid = self.symptomModel.prc_set_symptom(in_userID,p_callbackKey,p_sentence) 
         else:  
              sysSaid = [in_userID,'auto','undefine function','text'] 
 

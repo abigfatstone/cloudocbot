@@ -36,7 +36,7 @@ class MainModel:
     def setCallbackKeytoDB(self,in_userID,in_callbackKey,in_sentence):
         conn= pymysql.connect(host=self.args.mysqlHost , port = self.args.mysqlPort , user = self.args.mysqlUser , passwd=self.args.mysqlPassword , db =self.args.mysqlDB , charset=self.args.mysqlCharset)
         cur = conn.cursor()
-        v_sql='insert into t_user_callback(user_id,callback_key) select \''+in_userID+'\',\''+in_callbackKey+'\' ON DUPLICATE KEY UPDATE callback_key=\''+in_callbackKey+'\''
+        v_sql='insert into t_user_callback(user_id,callback_key) select \''+in_userID+'\',\''+in_callbackKey+'\' on duplicate key update callback_key=\''+in_callbackKey+'\''
         cur.execute(v_sql)  
         conn.commit()
         conn.close()   
