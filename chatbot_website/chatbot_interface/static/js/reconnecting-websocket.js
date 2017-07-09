@@ -299,12 +299,12 @@
          *
          * @param data a text string, ArrayBuffer or Blob to send to the server.
          */
-        this.send = function(data) {
+        this.send = function(data,userID) {
             if (ws) {
                 if (self.debug || ReconnectingWebSocket.debugAll) {
                     console.debug('ReconnectingWebSocket', 'send', self.url, data);
                 }
-                return ws.send(data);
+                return ws.send(data,userID);
             } else {
                 throw 'INVALID_STATE_ERR : Pausing to reconnect websocket';
             }

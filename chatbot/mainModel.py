@@ -8,8 +8,9 @@ class MainModel:
 
         conn= pymysql.connect(host=self.args.mysqlHost , port = self.args.mysqlPort , user = self.args.mysqlUser , passwd=self.args.mysqlPassword , db =self.args.mysqlDB , charset=self.args.mysqlCharset)
         cur = conn.cursor()
-        cur.execute('delete from t_patient_symptom')
-        cur.execute('delete from t_user_callback')
+
+        cur.execute('delete from t_patient_symptom where patient_id = \'' + in_userID +'\'')
+        cur.execute('delete from t_user_callback where user_id = \'' + in_userID  +'\'')
         conn.commit()
         sysSaid = [in_userID,in_callbackKey,'cleanup is done','text']     
         return sysSaid
@@ -33,10 +34,9 @@ class MainModel:
        
 
     def setCallbackKeytoDB(self,in_userID,in_callbackKey,in_sentence):
-
         conn= pymysql.connect(host=self.args.mysqlHost , port = self.args.mysqlPort , user = self.args.mysqlUser , passwd=self.args.mysqlPassword , db =self.args.mysqlDB , charset=self.args.mysqlCharset)
         cur = conn.cursor()
-        v_sql='insert into t_user_callback(user_id,callback_key) select \''+in_userID+'\',\''+p_callbackKey+'\' ON DUPLICATE KEY UPDATE callback_key=\''+p_callbackKey+'\''
+        v_sql='insert into t_user_callback(user_id,callback_key) select \''+in_userID+'\',\''+in_callbackKey+'\' ON DUPLICATE KEY UPDATE callback_key=\''+in_callbackKey+'\''
         cur.execute(v_sql)  
         conn.commit()
         conn.close()   

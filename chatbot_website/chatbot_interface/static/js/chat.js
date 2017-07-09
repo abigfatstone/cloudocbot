@@ -26,14 +26,15 @@ $(function() {
    
 
    $(document).on("click","#sendOption", function(event) {       
-    var options= '已选择了下述选项:';       
+    var options= '已选择了下述选项:'; 
+    var return_list = '';      
     $(this).parents('.answer').find('input[type=checkbox]:checked').each(function(index, ele){           
-            options = options + ele.value + ',';       
+            options = options + ele.value + ',';  
+            return_list = return_list + ele.value + '@L1@';     
         })       
-        console.log('select options:', options)       
-        options = options + '@user_id@: ' + getQueryString('UserID');       
-        var message = {message: options };       
-        chatsock.send(JSON.stringify(message));       
+        console.log('select options:', options)             
+        var message = {message: return_list + '@userid@' + getQueryString('UserID') };       
+        chatsock.send(JSON.stringify(message));   
         chat_zone.append(     
             $("<p class='question'></p >").html('You: ' + options)        
          );          

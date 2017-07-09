@@ -130,9 +130,9 @@
 		font-family: "Source Sans Pro", Helvetica, sans-serif;
 		font-size: 14pt;
 		font-weight: 300;
-		line-height: 2;
+		line-height: 1.5;
 		letter-spacing: 0.2em;
-		text-transform: uppercase;
+		text-transform: lowercase;
 	}
 
 		@media screen and (max-width: 1680px) {
@@ -147,7 +147,7 @@
 
 			body, input, select, textarea {
 				font-size: 10pt;
-				line-height: 1.75;
+				line-height: 1.5;
 			}
 
 		}
@@ -186,7 +186,7 @@
 
 	h1, h2, h3, h4, h5, h6 {
 		color: #313f47;
-		line-height: 1.5;
+		line-height: 1;
 		margin: 0 0 0.75em 0;
 	}
 
@@ -394,9 +394,9 @@
 				border: solid 1px #c8cccf;
 				content: '';
 				display: inline-block;
-				height: 1.65em;
+				height: 1.25em;
 				left: 0;
-				line-height: 1.58125em;
+				line-height: 1.5em;
 				position: absolute;
 				text-align: center;
 				top: 0.15em;

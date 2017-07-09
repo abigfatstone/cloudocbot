@@ -31,7 +31,7 @@ def ws_connect(message):
         Group(clientName).add(message.reply_channel)  # Answer back to the client
         message.channel_session['room'] = clientName
         message.reply_channel.send({'accept': True})
-        #Group(clientName).send({'text': json.dumps({'message': '欢迎使用小i，请问尊姓大名？'})})
+        Group(clientName).send({'text': json.dumps({'message': '欢迎使用小i，请问您哪里不舒服？'})})
         
 @channel_session
 def ws_receive(message):
@@ -41,7 +41,7 @@ def ws_receive(message):
     userInput = ''.join(data['message']).split('@userid@')
     userID=userInput[1]
 
-    p_callbackKey='firstcall'
+    p_callbackKey=''
 
     if userID == 'null':
         userID = clientName
@@ -53,7 +53,6 @@ def ws_receive(message):
         answer = '' 
         if sysSaid[3] == 'checkbox':
             p_output = sysSaid[2].split('@L1@')
-            print(p_output[0])
             answer = split_line(p_output[0])
             answer = answer + split_checkbox(p_output[1])
             answer=answer + "<p align='right'><a href='javascript:void(0)' style='color:red' id='sendOption'> 提交</a></p>"
