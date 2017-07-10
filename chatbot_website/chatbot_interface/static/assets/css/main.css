@@ -181,7 +181,7 @@
 	}
 
 	p {
-		margin: 0 0 1.5em 0;
+		/*margin: 0 0 1.5em 0;*/
 	}
 
 	h1, h2, h3, h4, h5, h6 {
@@ -703,6 +703,7 @@
 
 	#main {
 		position: relative;
+		width: 1024px;
 		max-width: 100%;
 		min-width: 35em; /* HERE IS THE WIDTH OF THE MAIN BLOCK */
 		padding: 4.5em 3em 3em 3em ;

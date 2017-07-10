@@ -56,7 +56,7 @@ def ws_receive(message):
             p_output = sysSaid[2].split('@L1@')
             answer = split_line(p_output[0])
             answer = answer + split_checkbox(p_output[1])
-            answer=answer + "<p align='right'><a href='javascript:void(0)' style='color:red' id='sendOption'> 提交</a></p>"
+            answer=answer + "<p align='right'><a href='javascript:void(0)' class='button button-glow button-rounded button-raised button-primary' id='sendOption'> 提交</a></p>"
        
         elif sysSaid[3] == 'table':
             p_output = sysSaid[2].split('@L1@')
@@ -79,7 +79,7 @@ def ws_receive(message):
     logger.info('{}: {} -> {}'.format(clientName, userInput, answer))
 
     # Send the prediction back
-    Group(clientName).send({'text': json.dumps({'message': answer})})
+    Group(clientName).send({'text': json.dumps({'message': answer, 'msgtype': sysSaid[3]})})
 
 def split_line(inputLine):
     line  = ''

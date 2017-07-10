@@ -21,13 +21,17 @@ $(function() {
         chat_zone.append(
             $("<p class='answer'></p>").html('Bot: ' + data.message)
         );
-    };
-
-   
+        if(data.msgtype == 'checkbox'){
+            $('#message').hide();
+        }else{
+            $('#message').show();
+        }
+    }
 
    $(document).on("click","#sendOption", function(event) {       
     var options= '已选择了下述选项:' ; 
-    var return_list = '';      
+    var return_list = ''; 
+    $(this).hide();     
     $(this).parents('.answer').find('input[type=checkbox]:checked').each(function(index, ele){           
             if (options == '已选择了下述选项:') {
                 options = options + ele.value ;  

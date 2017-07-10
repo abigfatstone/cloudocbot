@@ -25,7 +25,7 @@ SECRET_KEY = os.environ['CHATBOT_SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!1
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.11.234','172.16.164.234','118.31.68.238']
+ALLOWED_HOSTS = ['127.0.0.1', '192.168.11.234','172.16.164.234','118.31.68.238']
 
 
 # Application definition
