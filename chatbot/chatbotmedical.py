@@ -19,16 +19,13 @@ class Chatbot:
     def __init__(self):
         # Model/dataset parameters
         self.args = None
-        self.symptomModel = None  # Dataset
 
-        self.callbackKey = {}
+        self.symptomModel = None  # Dataset
         self.CONFIG_FILENAME = 'params.ini'
         self.SENTENCES_PREFIX = ['AI: ', 'me: ']
 
-
     @staticmethod
     def parseArgs(args):
-
 
         parser = argparse.ArgumentParser()
 
@@ -46,8 +43,6 @@ class Chatbot:
 
     def main(self, args=None):#
 
-        print('Welcome to cloudocBot v0.1 !')
-
         # General initialisation
         self.args = self.parseArgs(args)
 
@@ -55,9 +50,10 @@ class Chatbot:
             self.args.rootDir = os.getcwd()  # Use the current working directory
 
         self.loadModelParams()
-
         self.symptomModel = SymptomModel(self.args)
         self.mainModel = MainModel(self.args)
+        
+        print(self.mainModel.getSpeechCraft('welcome_cloudocbot'))
 
         if not self.args.rootDir:
             self.args.rootDir = os.getcwd()  # Use the current working directory
@@ -85,6 +81,7 @@ class Chatbot:
             p_callbackKey = sysSaid[1]
             print('{}{}'.format(self.SENTENCES_PREFIX[0],sysSaid[2]))
 
+    
 
     def daemonPredict(self, in_userID,in_callbackKey,in_sentence):
 
@@ -128,9 +125,9 @@ class Chatbot:
             in_callbackKey = 'ask_symptom'
             sysSaid = self.symptomModel.prc_ask_symptom(in_userID,in_callbackKey,in_sentence)
             p_symptom_list = self.symptomModel.prc_insert_symptom(in_userID,'子症状',1,3)
-            p_symptom_list = self.symptomModel.prc_insert_symptom(in_userID,'症状',0.5,3)
-            p_symptom_list = self.symptomModel.prc_insert_symptom(in_userID,'实验',0.5,3)
-            p_symptom_list = self.symptomModel.prc_insert_symptom(in_userID,'合并疾病',0.5,3)
+            p_symptom_list = self.symptomModel.prc_insert_symptom(in_userID,'症状',0.2,3)
+            p_symptom_list = self.symptomModel.prc_insert_symptom(in_userID,'实验',0.2,3)
+            p_symptom_list = self.symptomModel.prc_insert_symptom(in_userID,'合并疾病',0.2,3)
             p_callbackKey = sysSaid[1]
             p_sentence = sysSaid[2]
 
@@ -176,4 +173,5 @@ class Chatbot:
             self.args.mysqlPassword = config['dbConnection'].get('mysqlPassword')
             self.args.mysqlDB = config['dbConnection'].get('mysqlDB')
             self.args.mysqlCharset = config['dbConnection'].get('mysqlCharset')
-            
+
+         

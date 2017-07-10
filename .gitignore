@@ -6,3 +6,5 @@ nohup.out
 *.pyc
 chatbot/test.py
 chatbot/a.log
+*.pyc
+*.pyc

@@ -125,9 +125,7 @@ class SymptomModel:
                     symptom_list =  symptom_list + symptom_key[0]
                 else:
                     symptom_list =  symptom_list + '\',\'' + symptom_key[0]
-            # 基础数据存在重复数据
-            # TODO：select symptom_name from (select distinct symptom_name,symptom_type,f_symptom from chatbot_symptom) as a group by symptom_name having count(1)>1
-            # 通过该语句检查
+
             v_sql = ' insert into t_patient_symptom(patient_id,symptom_name,symptom_value,symptom_type,f_symptom,modified_time) ' +\
                     ' select distinct \'' + in_userID + '\',symptom_name,\'\' symptom_value,symptom_type,f_symptom,now() '+\
                     '   from chatbot_symptom '+\
@@ -195,7 +193,6 @@ class SymptomModel:
         #     print(v_sql)
         #     cur.execute(v_sql)
 
-        #TODO: 前段返回全部复选框后，将代码改为被注释代码，
         v_sql='update t_patient_symptom set symptom_value = 0  where patient_id = \''+in_userID+'\'  and symptom_value = -1 '
         print(v_sql)
         cur.execute(v_sql)
@@ -245,9 +242,9 @@ class SymptomModel:
                     return_list_disease  =  return_list_disease + ',' + disease_key[0]
 
             if return_list_disease != '':
-                return_list_disease = '根据您所描述的症状提示您可能存在以下疾病：'+ '@L2@ ' + return_list_disease + '@L2@'
+                return_list_disease = self.MainModel.getSpeechCraft('more_disease') + '@L2@ ' + return_list_disease + '@L2@'
 
-            return_list = return_list_disease + '需要进一步了解您是否还具有以下其他症状以便做出更好的诊断：@L1@' + return_list_symptom 
+            return_list = return_list_disease + self.MainModel.getSpeechCraft('next_symptom') +'@L1@' + return_list_symptom 
             return return_list
    
 

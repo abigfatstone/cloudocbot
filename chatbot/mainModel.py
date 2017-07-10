@@ -1,8 +1,12 @@
 import pymysql
+import os
 
 class MainModel:
     def __init__(self, args):
         self.args = args
+        self.speechcraft = {}
+        self.SPEECHCRAFT_FILENAME = 'speechcraft.ini'
+        self.speechcraft = self.loadSpeechcraft()
 
     def cleanup(self,in_userID,in_callbackKey,in_sentence):
 
@@ -65,3 +69,21 @@ class MainModel:
 
         sysSaid = [in_userID,p_callbackKey,p_text,'text']   
         return sysSaid
+   
+    def getSpeechCraft(self,getWord):
+        if getWord in self.speechcraft:
+            return self.speechcraft[getWord]
+        else:
+            return 'undefined speechcraft' 
+
+    def loadSpeechcraft(self):
+        speechcraft_fileName = os.path.join(self.args.rootDir, self.SPEECHCRAFT_FILENAME)
+        
+        with open(speechcraft_fileName, 'r',encoding= 'utf-8') as f: 
+            # Loading
+            dic_speechcraft = {}
+            for line in f:
+
+                if len(line.split('=')) > 1 :
+                    dic_speechcraft[line.split('=')[0].strip().lower()] = line.split('=')[1].strip()    
+        return dic_speechcraft        
