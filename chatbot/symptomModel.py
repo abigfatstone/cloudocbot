@@ -1,9 +1,11 @@
 import pymysql
+from chatbot.mainModel import MainModel
 
 class SymptomModel:
     def __init__(self, args):
         self.args = args
-
+        self.mainModel = MainModel(self.args)
+        
     def prc_main_symptom(self,in_userID,in_callbackKey,in_sentence):
         sysSaid  = ['','','','']
         print('===============================')
@@ -242,9 +244,9 @@ class SymptomModel:
                     return_list_disease  =  return_list_disease + ',' + disease_key[0]
 
             if return_list_disease != '':
-                return_list_disease = self.MainModel.getSpeechCraft('more_disease') + '@L2@ ' + return_list_disease + '@L2@'
+                return_list_disease = self.mainModel.getSpeechCraft('more_disease') + '@L2@ ' + return_list_disease + '@L2@'
 
-            return_list = return_list_disease + self.MainModel.getSpeechCraft('next_symptom') +'@L1@' + return_list_symptom 
+            return_list = return_list_disease + self.mainModel.getSpeechCraft('next_symptom') +'@L1@' + return_list_symptom 
             return return_list
    
 
