@@ -42,7 +42,7 @@ def ws_receive(message):
     userID = userInput[1]
 
     p_callbackKey=''
-
+  
     if userID == 'null':
         userID = clientName
 

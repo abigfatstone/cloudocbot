@@ -46,9 +46,9 @@ class SymptomModel:
                         return_disease = return_disease + str(line_disease[0]) + '@L2@' + str(line_disease[1]) + '@L2@' +str(line_disease[2]) + '@L2@' +str(line_disease[3]) + '@L2@' +str(line_disease[4]) + '@L2@' +str(line_disease[5])
                     else:
                         return_disease = return_disease  + '@L1@' + str(line_disease[0]) + '@L2@' + str(line_disease[1]) + '@L2@' +str(line_disease[2]) + '@L2@' +str(line_disease[3]) + '@L2@' +str(line_disease[4]) + '@L2@' +str(line_disease[5])
-                sysSaid = [in_userID,'set_symptom','疾病名@L2@命中症状数@L2@未命中症状数@L2@未选择症状数@L2@总数@L2@命中症状明细@L1@' +  return_disease,'table'] 
+                sysSaid = [in_userID,'set_symptom',self.mainModel.getSpeechCraft('table_head')  +  return_disease,'table'] 
             else:       
-                sysSaid = [in_userID,'set_symptom','你的身体很健康，恭喜！','text'] 
+                sysSaid = [in_userID,'set_symptom',self.mainModel.getSpeechCraft('good_health') ,'text'] 
         return sysSaid
 
     def prc_insert_symptom(self,in_userID,in_symptom_type,max_ratio,max_len):

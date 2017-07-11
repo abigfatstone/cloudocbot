@@ -59,13 +59,16 @@ class MainModel:
         r1 = cur.fetchone()
         if row_count == 1:
             p_callbackKey = r1[0]
-            p_text = '欢迎回来，距离您上次使用小I已经过去' + r1[1] + '秒，请问您的主症状？'
+            p_text = self.getSpeechCraft('welcome_back') 
+
+            
+
         else:
             p_callbackKey = 'ask_symptom' 
             v_sql='insert into t_user_callback(user_id,callback_key) select \''+in_userID+'\',\''+p_callbackKey+'\''
             cur.execute(v_sql)
             conn.commit()
-            p_text = '欢迎使用小i，这是您第一次使用小I，请问您的主症状？'
+            p_text = self.getSpeechCraft('welcome_first')
 
         sysSaid = [in_userID,p_callbackKey,p_text,'text']   
         return sysSaid
